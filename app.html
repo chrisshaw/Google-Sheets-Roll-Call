@@ -1,0 +1,17 @@
+<?!= HtmlService.createHtmlOutputFromFile('css-package').getContent(); ?>
+<?!= HtmlService.createHtmlOutputFromFile('css').getContent(); ?>
+<?!= HtmlService.createHtmlOutputFromFile('jquery-ui-css').getContent(); ?>
+
+<h1 class='centered sans'>Attendance Tracker</h1>
+<div id='name-container'>
+  <form class='sans' onsubmit="google.script.run.withSuccessHandler(showCount).withFailureHandler(showError).processForm(this)">
+    <h3 class='centered sans'>Sunday Attendance for <input name="sunday-date" id='datepicker'></h3>
+    <p id='loading' class='centered sans'>Pick a date to start loading in attendees.</p>
+    <div id='anon-input' class='cleared control'>
+      <label id="anon-label"># of other attendees: </label><input type="number" name="anon">
+      <input type="submit" value="Submit">
+    </div>
+  </form>
+</div>
+
+<?!= HtmlService.createHtmlOutputFromFile('js').getContent(); ?>
