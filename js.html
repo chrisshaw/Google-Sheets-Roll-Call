@@ -1,0 +1,83 @@
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.1/jquery-ui.min.js"></script>
+
+<script>
+  $(function(){
+    //google.script.run.withSuccessHandler(showAttendees).withFailureHandler(showError).getAttendees();
+    $('#datepicker').datepicker({
+                      beforeShowDay: function(date) {
+                        return [date.getDay() === 0,''];
+                      },
+                      onSelect: function(dateText, inst){
+                        $('#loading').html('Loading...');
+                        google.script.run.withSuccessHandler(showAttendees).withUserObject(dateText).withFailureHandler(showError).getAttendees();
+                      }
+                     });
+  });
+  
+  function showAttendees(attendeesJSON, dateText) {
+    $('#loading').remove(); 
+    var attendees = JSON.parse(attendeesJSON);
+    var date = new Date(dateText);
+    var $last = $('#anon-input');
+//    for(var i = 1; i< attendees.length; i++){
+//      var attendee = attendees[i][0];
+    for(var i = 0; i < attendees.length; i++){
+      var attendee = attendees[i];
+      var lastVisit = new Date(attendee['lastVisit']);     
+      console.log(attendee.name);
+      console.log('date is ' + date + ' and lastVisit date is ' + lastVisit);       
+      var attendeeName = attendee.name;      
+      var attendeeHTML = attendeeName.replace(/\s+/g, '-');
+      var guestAttendeeHTML = "guests-of-" + attendeeHTML;
+      var attendeeRow = attendee.row;
+
+      var $guestButton = $('<button class="guest-button floated-right" name=' + guestAttendeeHTML + ' >Guests?</button>');
+      $guestButton.attr('id', "button-" + guestAttendeeHTML);
+      $guestButton.click(function(){
+        var $this = $(this);
+        var elementName = $this.attr('name');
+        $this.after('<label class="floated-right"># Guests: <input type="number" name=' + elementName + '></label>');
+        $this.remove();
+      }).attr('disabled', 'disabled');
+      
+      var $checkbox = $('<input type="checkbox" name=' + attendeeHTML + ' value=' + attendeeRow + '>').change(
+        function(){
+          enableButton($(this));
+        });
+      if(lastVisit.toString() === date.toString()){
+        console.log("they are the same date");
+        $checkbox.attr('checked', true);
+        $guestButton.removeAttr('disabled');
+      }                  
+      var $attendee = $('<label>' + attendeeName + '</label>').prepend($checkbox);      
+      var $control = $('<div class="control sans">');
+      $control.append($attendee).append($guestButton);    
+      $last.before($control);
+    }
+  }
+  
+  function enableButton(checkbox){
+    console.log('Initiating enableButton function.');
+    console.log('Name of input: ' + checkbox.attr('name'));    
+    if(checkbox.is(':checked')){
+      console.log('It is checked');
+
+      console.log('ID searching for: #button-guests-of-' + checkbox.attr('name'));
+      console.log('ID of button: ' + $('#button-guests-of-' + checkbox.attr('name')).attr('id'));
+      $('#button-guests-of-' + checkbox.attr('name')).removeAttr('disabled');
+    } else {
+      $('#button-guests-of-' + checkbox.attr('name')).attr('disabled','disabled');
+    }
+  }
+  
+  function showError(e){
+    alert("An error occurred: " + e);
+  }
+  
+  function showCount(resp){
+    alert("Done! We had " + resp + " people this week.");
+  }
+  
+  
+</script>
